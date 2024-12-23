@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS "usd_rates";
+DROP TABLE IF EXISTS "rub_rates";
+DROP TABLE IF EXISTS "eur_rates";

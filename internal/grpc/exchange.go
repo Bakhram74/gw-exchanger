@@ -22,5 +22,21 @@ func (s *server) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.Exch
 }
 
 func (s *server) GetExchangeRateForCurrency(ctx context.Context, req *pb.CurrencyRequest) (*pb.ExchangeRateResponse, error) {
-	return nil, nil
+	fromCurrency := req.GetFromCurrency()
+	toCurrency := req.GetToCurrency()
+
+	if fromCurrency == toCurrency {
+		return nil, status.Error(codes.InvalidArgument, "from_currency and to_currency cannot be the same")
+	}
+	rate, err := s.exchange.GetRateForCurrency(ctx, fromCurrency, toCurrency)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get exchange rate")
+	}
+
+	response := &pb.ExchangeRateResponse{
+		FromCurrency: fromCurrency,
+		ToCurrency:   toCurrency,
+		Rate:         rate,
+	}
+	return response, nil
 }

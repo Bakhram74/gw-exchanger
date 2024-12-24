@@ -14,6 +14,7 @@ type server struct {
 
 type Exchange interface {
 	GetRates(ctx context.Context) (map[string]float32, error)
+	GetRateForCurrency(ctx context.Context, fromCurrency, toCurrency string) (float32, error)
 }
 
 func Register(gRPCServer *grpc.Server, exchange Exchange) {

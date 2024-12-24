@@ -10,6 +10,7 @@ import (
 
 type Rate interface {
 	Rates(ctx context.Context) (models.Rates, error)
+	RateForCurrency(ctx context.Context, rateTable, rateColumn string) (float32, error)
 }
 
 type Service struct {
@@ -23,7 +24,7 @@ func NewService(rate Rate) *Service {
 }
 
 func (s *Service) GetRates(ctx context.Context) (map[string]float32, error) {
-	const op = "Exchange.GetRates"
+	const op = "Rate.GetRates"
 
 	log := slog.With(
 		slog.String("op", op),
@@ -39,4 +40,46 @@ func (s *Service) GetRates(ctx context.Context) (map[string]float32, error) {
 	respMap := map[string]float32{"USD": rates.Usd, "EUR": rates.Eur}
 
 	return respMap, nil
+}
+
+func (s *Service) GetRateForCurrency(ctx context.Context, fromCurrency, toCurrency string) (float32, error) {
+	const op = "Rate.GetRateForCurrency"
+
+	log := slog.With(
+		slog.String("op", op),
+	)
+	log.Info("attempting to get rate for currency")
+
+	var rateTable, rateColumn string
+
+	switch fromCurrency {
+	case "USD":
+		rateTable = "usd_rates"
+		if toCurrency == "EUR" {
+			rateColumn = "eur"
+		} else if toCurrency == "RUB" {
+			rateColumn = "rub"
+		}
+	case "EUR":
+		rateTable = "eur_rates"
+		if toCurrency == "USD" {
+			rateColumn = "usd"
+		} else if toCurrency == "RUB" {
+			rateColumn = "rub"
+		}
+	case "RUB":
+		rateTable = "rub_rates"
+		if toCurrency == "USD" {
+			rateColumn = "usd"
+		} else if toCurrency == "EUR" {
+			rateColumn = "eur"
+		}
+	}
+
+	rate, err := s.rate.RateForCurrency(ctx, rateTable, rateColumn)
+	if err != nil {
+		log.Error("error fetching exchange rate: ", pkg.Err(err))
+		return 0, err
+	}
+	return rate, nil
 }

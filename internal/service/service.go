@@ -9,7 +9,7 @@ import (
 )
 
 type Rate interface {
-	Rates(ctx context.Context) (models.Rates, error)
+	Rates(ctx context.Context) (models.RubRate, error)
 	RateForCurrency(ctx context.Context, rateTable, rateColumn string) (float32, error)
 }
 

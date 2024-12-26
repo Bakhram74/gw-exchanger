@@ -11,7 +11,7 @@ type Config struct {
 	Env     string
 	Storage StorageConfig
 
-	HttpPort string
+	Port string
 }
 
 type StorageConfig struct {
@@ -39,9 +39,9 @@ func NewConfig() Config {
 
 	config := Config{
 
-		// HttpPort: pkg.GetEnv("HTTP_PORT", "9090"),
-		Env:      pkg.GetEnv("ENVIRONMENT", "local"),
-		Storage:  storage,
+		Port:    pkg.GetEnv("PORT", "44044"),
+		Env:     pkg.GetEnv("ENVIRONMENT", "local"),
+		Storage: storage,
 	}
 	return config
 }

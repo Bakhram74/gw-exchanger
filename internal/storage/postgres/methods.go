@@ -7,12 +7,12 @@ import (
 	"github.com/Bakhram74/gw-exchanger/internal/models"
 )
 
-func (p *Postgres) Rates(ctx context.Context) (models.Rates, error) {
+func (p *Postgres) Rates(ctx context.Context) (models.RubRate, error) {
 
 	query := `SELECT id, usd, eur, created_at FROM rub_rates ORDER BY created_at DESC LIMIT 1`
 	row := p.Pool.QueryRow(ctx, query)
 
-	var rates models.Rates
+	var rates models.RubRate
 
 	err := row.Scan(
 		&rates.ID,
@@ -21,7 +21,7 @@ func (p *Postgres) Rates(ctx context.Context) (models.Rates, error) {
 		&rates.CreatedAt,
 	)
 	if err != nil {
-		return models.Rates{}, err
+		return models.RubRate{}, err
 	}
 	return rates, nil
 }
@@ -32,7 +32,7 @@ func (p *Postgres) RateForCurrency(ctx context.Context, rateTable, rateColumn st
 
 	var rate float32
 	err := p.Pool.QueryRow(ctx, query).Scan(&rate)
-	
+
 	if err != nil {
 		return 0,  err
 	}

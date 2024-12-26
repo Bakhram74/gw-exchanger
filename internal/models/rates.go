@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Rates struct {
+type RubRate struct {
 	ID        int       `json:"id"`
 	Usd       float32   `json:"usd"`
 	Eur       float32   `json:"eur"`

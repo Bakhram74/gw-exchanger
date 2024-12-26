@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *server) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.ExchangeRatesResponse, error) {
+func (s *exchangeApi) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.ExchangeRatesResponse, error) {
 	rates, err := s.exchange.GetRates(ctx)
 
 	if err != nil {
@@ -21,7 +21,7 @@ func (s *server) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.Exch
 
 }
 
-func (s *server) GetExchangeRateForCurrency(ctx context.Context, req *pb.CurrencyRequest) (*pb.ExchangeRateResponse, error) {
+func (s *exchangeApi) GetExchangeRateForCurrency(ctx context.Context, req *pb.CurrencyRequest) (*pb.ExchangeRateResponse, error) {
 	fromCurrency := req.GetFromCurrency()
 	toCurrency := req.GetToCurrency()
 

@@ -1,4 +1,4 @@
-package grpc
+package grpcServer
 
 import (
 	"context"
@@ -7,6 +7,21 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+type exchangeApi struct {
+	pb.UnimplementedExchangeServiceServer
+	exchange Exchange
+}
+
+type Exchange interface {
+	GetRates(ctx context.Context) (map[string]float32, error)
+	GetRateForCurrency(ctx context.Context, fromCurrency, toCurrency string) (float32, error)
+}
+
+// func Register(gRPCServer *grpc.Server, exchange Exchange) {
+// 	pb.RegisterExchangeServiceServer(gRPCServer, &exchangeApi{exchange: exchange})
+
+// }
 
 func (s *exchangeApi) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.ExchangeRatesResponse, error) {
 	rates, err := s.exchange.GetRates(ctx)

@@ -8,7 +8,8 @@ import (
 	"syscall"
 
 	"github.com/Bakhram74/gw-exchanger/config"
-	"github.com/Bakhram74/gw-exchanger/internal/grpc"
+
+	"github.com/Bakhram74/gw-exchanger/internal/grpcServer"
 
 	"github.com/Bakhram74/gw-exchanger/internal/service"
 	"github.com/Bakhram74/gw-exchanger/internal/storage/postgres"
@@ -34,7 +35,8 @@ func main() {
 
 	service := service.NewService(postgres)
 
-	server := grpc.New(service, cfg.Port)
+	server := grpcServer.New(service, cfg.Port,log)
+
 	go func() {
 		server.MustRun()
 	}()

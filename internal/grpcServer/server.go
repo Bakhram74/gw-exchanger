@@ -1,4 +1,4 @@
-package grpc
+package grpcServer
 
 import (
 	"context"
@@ -14,31 +14,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type exchangeApi struct {
-	pb.UnimplementedExchangeServiceServer
-	exchange Exchange
-}
-
-type Exchange interface {
-	GetRates(ctx context.Context) (map[string]float32, error)
-	GetRateForCurrency(ctx context.Context, fromCurrency, toCurrency string) (float32, error)
-}
-
-func Register(gRPCServer *grpc.Server, exchange Exchange) {
-	pb.RegisterExchangeServiceServer(gRPCServer, &exchangeApi{exchange: exchange})
-
-}
-
 type Server struct {
 	gRPCServer *grpc.Server
 	port       string
 }
 
-func New(exchange Exchange, port string) *Server {
+func New(exchange Exchange, port string, log *slog.Logger) *Server {
 
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandler(func(p any) (err error) {
-			slog.Error("Recovered from panic", slog.Any("panic", p))
+			log.Error("Recovered from panic", slog.Any("panic", p))
 			return status.Error(codes.Internal, "internal error")
 		}),
 	}
@@ -49,23 +34,19 @@ func New(exchange Exchange, port string) *Server {
 			logging.PayloadSent,
 		),
 	}
-	log := &slog.Logger{}
+
 	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
 		recovery.UnaryServerInterceptor(recoveryOpts...),
 		logging.UnaryServerInterceptor(InterceptorLogger(log), loggingOpts...),
 	))
-	Register(gRPCServer, exchange)
+
+
+	pb.RegisterExchangeServiceServer(gRPCServer, &exchangeApi{exchange: exchange})
 
 	return &Server{
 		gRPCServer: gRPCServer,
 		port:       port,
 	}
-}
-
-func InterceptorLogger(l *slog.Logger) logging.Logger {
-	return logging.LoggerFunc(func(ctx context.Context, level logging.Level, msg string, fields ...any) {
-		l.Log(ctx, slog.Level(level), msg, fields...)
-	})
 }
 
 func (s *Server) MustRun() {
@@ -94,4 +75,10 @@ func (s *Server) Stop() {
 		Info("stopping gRPC server", slog.String("port", s.port))
 
 	s.gRPCServer.Stop()
+}
+
+func InterceptorLogger(l *slog.Logger) logging.Logger {
+	return logging.LoggerFunc(func(ctx context.Context, level logging.Level, msg string, fields ...any) {
+		l.Log(ctx, slog.Level(level), msg, fields...)
+	})
 }

@@ -2,6 +2,7 @@ package grpcServer
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Bakhram74/proto-exchange/pb"
 	"google.golang.org/grpc/codes"
@@ -18,11 +19,6 @@ type Exchange interface {
 	GetRateForCurrency(ctx context.Context, fromCurrency, toCurrency string) (float32, error)
 }
 
-// func Register(gRPCServer *grpc.Server, exchange Exchange) {
-// 	pb.RegisterExchangeServiceServer(gRPCServer, &exchangeApi{exchange: exchange})
-
-// }
-
 func (s *exchangeApi) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb.ExchangeRatesResponse, error) {
 	rates, err := s.exchange.GetRates(ctx)
 
@@ -37,8 +33,8 @@ func (s *exchangeApi) GetExchangeRates(ctx context.Context, empt *pb.Empty) (*pb
 }
 
 func (s *exchangeApi) GetExchangeRateForCurrency(ctx context.Context, req *pb.CurrencyRequest) (*pb.ExchangeRateResponse, error) {
-	fromCurrency := req.GetFromCurrency()
-	toCurrency := req.GetToCurrency()
+	fromCurrency := strings.ToUpper(req.GetFromCurrency())
+	toCurrency := strings.ToUpper(req.GetToCurrency())
 
 	if fromCurrency == toCurrency {
 		return nil, status.Error(codes.InvalidArgument, "from_currency and to_currency cannot be the same")
